@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import net.dimaskama.mcef.api.MCEFApi;
 import net.dimaskama.mcef.api.MCEFBrowser;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -81,6 +82,14 @@ public class BrowserScreen extends Screen {
                 b -> navigate("https://www.youtube.com"))
                 .bounds(right - 54, y, 54, BAR_H).build());
         right -= 57;
+        this.addRenderableWidget(Button.builder(Component.literal("Video"),
+                b -> playVideo())
+                .bounds(right - 40, y, 40, BAR_H).build());
+        right -= 43;
+        this.addRenderableWidget(Button.builder(Component.literal("Extern"),
+                b -> openExternal())
+                .bounds(right - 44, y, 44, BAR_H).build());
+        right -= 47;
         this.addRenderableWidget(Button.builder(Component.literal("Go"),
                 b -> navigate(urlBox.getValue()))
                 .bounds(right - 28, y, 28, BAR_H).build());
@@ -113,12 +122,39 @@ public class BrowserScreen extends Screen {
         if (!init.isDone()) return;
         browser = MCEFApi.getInstance().createBrowser(profile.homeUrl(), false);
         SESSIONS.put(profile, browser);
+        browser.getCefBrowser().setWindowlessFrameRate(60); // fluessigeres Bild beim Scrollen und bei Videos
         Identifier id = Identifier.fromNamespaceAndPath("browsermod", "browser/" + profile.name().toLowerCase());
         this.minecraft.getTextureManager().register(id, new BrowserTexture(browser));
         TEXTURE_IDS.put(profile, id);
         browser.resize(pw * scale, ph * scale);
         browser.setFocus(true);
         pageFocused = true;
+    }
+
+    /** Wandelt das Video der aktuellen Seite um (yt-dlp + ffmpeg) und spielt es hier im Spiel ab. */
+    private void playVideo() {
+        if (browser == null) return;
+        String url = browser.getCefBrowser().getURL();
+        if (url == null || !url.startsWith("http") || url.startsWith("http://127.0.0.1")) {
+            url = profile.toUrl(urlBox.getValue());
+        }
+        try {
+            browser.getCefBrowser().loadURL(VideoBridge.playerUrl(url));
+        } catch (java.io.IOException e) {
+            browser.getCefBrowser().loadURL("data:text/html,Video-Server konnte nicht gestartet werden");
+        }
+    }
+
+    /** Oeffnet die aktuelle Seite im normalen Browser (fuer Twitch, TikTok und andere H.264-Videos). */
+    private void openExternal() {
+        String url = null;
+        if (browser != null) {
+            url = browser.getCefBrowser().getURL();
+        }
+        if (url == null || url.isEmpty()) {
+            url = profile.toUrl(urlBox.getValue());
+        }
+        Util.getPlatform().openUri(url);
     }
 
     private void navigate(String input) {

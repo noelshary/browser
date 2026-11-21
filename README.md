@@ -12,3 +12,9 @@ Beim ersten Start lädt MCEF die Chromium-Dateien herunter (dauert kurz).
 
 ## Hinweis
 Alle "Browser" nutzen dieselbe Chromium-Engine; sie unterscheiden sich in Name, Farbe, Startseite und Suchmaschine.
+
+## Videos wie Twitch / TikTok (Button "Video")
+Chromium in MCEF kann kein H.264. Der Button "Video" wandelt die aktuelle Seite mit
+**yt-dlp** und **ffmpeg** live in WebM um und spielt sie im Spiel ab.
+Beide Programme muessen installiert und im PATH sein (Windows: `winget install yt-dlp.yt-dlp` und
+`winget install Gyan.FFmpeg`, danach Minecraft/Launcher neu starten).

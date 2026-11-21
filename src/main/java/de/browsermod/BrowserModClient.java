@@ -1,6 +1,7 @@
 package de.browsermod;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.dimaskama.mcef.api.MCEFApi;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -14,6 +15,7 @@ public class BrowserModClient implements ClientModInitializer {
 
     private static KeyMapping openKey;
     private static volatile boolean openRequested;
+    private static boolean warmedUp;
 
     @Override
     public void onInitializeClient() {
@@ -34,6 +36,15 @@ public class BrowserModClient implements ClientModInitializer {
         // Das Menue wird erst im naechsten Tick geoeffnet, weil sich der Chat nach dem
         // Befehl sonst sofort wieder ueber das Menue schliessen wuerde.
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            // Chromium schon beim Spielstart im Hintergrund vorbereiten, damit der erste Start schneller geht
+            if (!warmedUp) {
+                warmedUp = true;
+                try {
+                    MCEFApi.initialize();
+                } catch (Throwable ignored) {
+                    // wird beim Oeffnen des Browsers erneut versucht
+                }
+            }
             while (openKey.consumeClick()) {
                 openRequested = true;
             }
