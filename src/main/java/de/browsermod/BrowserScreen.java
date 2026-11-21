@@ -8,6 +8,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -24,6 +26,9 @@ public class BrowserScreen extends Screen {
 
     /** Offene Browser-Sitzungen (bleiben beim Schliessen des Bildschirms erhalten). */
     private static final Map<BrowserProfile, MCEFBrowser> SESSIONS = new EnumMap<>(BrowserProfile.class);
+
+    /** Namen, unter denen die Browser-Texturen bei Minecraft angemeldet sind. */
+    private static final Map<BrowserProfile, Identifier> TEXTURE_IDS = new EnumMap<>(BrowserProfile.class);
 
     private final BrowserProfile profile;
     private MCEFBrowser browser;
@@ -104,6 +109,9 @@ public class BrowserScreen extends Screen {
         if (!init.isDone()) return;
         browser = MCEFApi.getInstance().createBrowser(profile.homeUrl(), false);
         SESSIONS.put(profile, browser);
+        Identifier id = Identifier.fromNamespaceAndPath("browsermod", "browser/" + profile.name().toLowerCase());
+        this.minecraft.getTextureManager().register(id, new BrowserTexture(browser));
+        TEXTURE_IDS.put(profile, id);
         browser.resize(pw * scale, ph * scale);
         browser.setFocus(true);
         pageFocused = true;
@@ -173,7 +181,11 @@ public class BrowserScreen extends Screen {
      * Das ist die einzige Stelle, die von der genauen Render-API von 1.21.11 abhaengt.
      */
     private void drawPage(GuiGraphics g) {
-        g.blit(browser.getTextureView(), px, py, px + pw, py + ph, 0f, 1f, 0f, 1f);
+        Identifier id = TEXTURE_IDS.get(profile);
+        if (id == null) return;
+        int tw = pw * scale;
+        int th = ph * scale;
+        g.blit(RenderPipelines.GUI_TEXTURED, id, px, py, 0f, 0f, pw, ph, tw, th, tw, th);
     }
 
     // ---------------------------------------------------------------- Maus
