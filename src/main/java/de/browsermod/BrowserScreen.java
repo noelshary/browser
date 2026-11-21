@@ -77,6 +77,10 @@ public class BrowserScreen extends Screen {
                 b -> navigate("https://chatgpt.com"))
                 .bounds(right - 54, y, 54, BAR_H).build());
         right -= 57;
+        this.addRenderableWidget(Button.builder(Component.literal("YouTube"),
+                b -> navigate("https://www.youtube.com"))
+                .bounds(right - 54, y, 54, BAR_H).build());
+        right -= 57;
         this.addRenderableWidget(Button.builder(Component.literal("Go"),
                 b -> navigate(urlBox.getValue()))
                 .bounds(right - 28, y, 28, BAR_H).build());
