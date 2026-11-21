@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "browsermod",
+  "version": "${version}",
+  "name": "Browser Mod",
+  "description": "Ein Browser im Spiel: /browser oder Keybind oeffnen, Browser aus dem Kreis waehlen, Webseiten nutzen.",
+  "authors": ["BrowserMod Authors"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["de.browsermod.BrowserModClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
