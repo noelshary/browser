@@ -1,17 +1,26 @@
 package de.browsermod;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.EnumMap;
+import java.util.Map;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 /** Das Auswahl-Menue: Die Browser kreisen auf einer Ellipse, Klick oeffnet den Browser. */
 public class BrowserSelectScreen extends Screen {
     private static final BrowserProfile[] PROFILES = BrowserProfile.values();
+
+    private static final int ICON_TEX = 256;
+    private final Map<BrowserProfile, Boolean> hasIcon = new EnumMap<>(BrowserProfile.class);
+
+    private boolean iconExists(BrowserProfile p) {
+        return hasIcon.computeIfAbsent(p, k -> this.minecraft.getResourceManager().getResource(k.iconId()).isPresent());
+    }
 
     private double phase = 0.0;
     private long lastNanos = System.nanoTime();
@@ -69,14 +78,23 @@ public class BrowserSelectScreen extends Screen {
         int alpha = (int) (120 + s.depth() * 135);
         BrowserProfile p = s.profile();
 
-        g.fill(x + 4, y + 4, x + sz + 4, y + sz + 4, 0x66000000); // Schatten
-        g.fill(x, y, x + sz, y + sz, withAlpha(p.color(), alpha));
-        int inset = sz / 5;
-        g.fill(x + inset, y + inset, x + sz - inset, y + sz - inset, withAlpha(p.accent(), alpha));
-        int inset2 = sz * 2 / 5;
-        g.fill(x + inset2, y + inset2, x + sz - inset2, y + sz - inset2, withAlpha(0xFFFFFFFF, alpha));
+        if (iconExists(p)) {
+            // nur das Logo selbst wird getoent: hinten dunkler, vorne/beim Drueberfahren hell
+            int v = hover ? 255 : (int) (130 + s.depth() * 125);
+            int tint = 0xFF000000 | (v << 16) | (v << 8) | v;
+            g.blit(RenderPipelines.GUI_TEXTURED, p.iconId(), x, y, 0f, 0f, sz, sz, ICON_TEX, ICON_TEX, ICON_TEX, ICON_TEX, tint);
+        } else {
+            g.fill(x + 4, y + 4, x + sz + 4, y + sz + 4, 0x66000000); // Schatten
+            g.fill(x, y, x + sz, y + sz, withAlpha(p.color(), alpha));
+            int inset = sz / 5;
+            g.fill(x + inset, y + inset, x + sz - inset, y + sz - inset, withAlpha(p.accent(), alpha));
+            int inset2 = sz * 2 / 5;
+            g.fill(x + inset2, y + inset2, x + sz - inset2, y + sz - inset2, withAlpha(0xFFFFFFFF, alpha));
+        }
 
-        if (hover) {
+        if (hover && iconExists(p)) {
+            g.fill(x + sz / 4, y + sz + 1, x + sz - sz / 4, y + sz + 3, 0xFFFFFFFF); // Unterstrich statt Kasten
+        } else if (hover) {
             int c = 0xFFFFFFFF;
             g.fill(x - 2, y - 2, x + sz + 2, y, c);
             g.fill(x - 2, y + sz, x + sz + 2, y + sz + 2, c);

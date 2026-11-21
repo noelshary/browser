@@ -2,6 +2,7 @@ package de.browsermod;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import net.minecraft.resources.Identifier;
 
 /**
  * Die Browser, die im Kreis-Menue angezeigt werden.
@@ -41,6 +42,11 @@ public enum BrowserProfile {
     /** Zweitfarbe (ARGB). */
     public int accent() {
         return accent;
+    }
+
+    /** Pfad zum Logo: assets/browsermod/textures/gui/browsers/<name>.png (256x256, transparent). */
+    public Identifier iconId() {
+        return Identifier.fromNamespaceAndPath("browsermod", "textures/gui/browsers/" + name().toLowerCase() + ".png");
     }
 
     public String homeUrl() {

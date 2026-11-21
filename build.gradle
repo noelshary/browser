@@ -1,6 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.14-SNAPSHOT'
-    id 'maven-publish'
+    id 'fabric-loom' version "${loom_version}"
 }
 
 version = project.mod_version
@@ -11,10 +10,10 @@ base {
 }
 
 repositories {
-    // Phase 2: MCEF Modern (Chromium im Spiel)
+    mavenCentral()
     maven {
-        name = 'DimasKama'
-        url = uri('https://maven.dimaskama.net/releases')
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
     }
 }
 
@@ -24,8 +23,10 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    // Phase 2: diese Zeile aktivieren, sobald die Chromium-Anbindung eingebaut wird
-    // modImplementation "net.dimaskama:mcef-modern:${project.mcef_version}"
+    // MCEF Modern: muss zur Laufzeit als Mod im mods-Ordner liegen
+    modImplementation "maven.modrinth:mcef-modern:${project.mcef_version}"
+    // Nur zum Kompilieren: die CEF-Klassen (CefBrowser usw.)
+    compileOnly "me.friwi:jcefmaven:${project.jcef_version}"
 }
 
 processResources {
@@ -44,11 +45,4 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    inputs.property 'archivesName', project.base.archivesName
-    from('LICENSE') {
-        rename { "${it}_${inputs.properties.archivesName}" }
-    }
 }
